@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Execute the prepared statement
         if ($stmt->execute()) {
-            echo "User registered successfully. You can now [login](link_to_login_page).";
+            echo "User registered successfully.";
             // You might want to redirect the user to a login page
             // header("location: login.php");
         } else {
