@@ -11,6 +11,12 @@
         <input type="text" name="fname" placeholder="John">
         <label for="lname">Last Name</label>
         <input type="text" name="lname" placeholder="Doe">
+        <label for="email">Email</label>
+        <input type="email" name="email" placeholder="someone@example.com">
+        <label for="password">Password</label>
+        <input type="password" name="password">
+        <label for="password">Confirm Password</label>
+        <input type="password" name="password">
     </form>
 </body>
 </html>
