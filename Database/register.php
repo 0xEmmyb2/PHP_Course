@@ -1,38 +1,69 @@
 <?php
-// Include database connection
 require_once 'config.php';
 
-// Process form data when form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
 
-    // Hash the password for security
-    $password_hash = password_hash($password, PASSWORD_DEFAULT);
-
-    // Prepare an INSERT statement
-    $sql = "INSERT INTO users (username, email, password_hash) VALUES (:username, :email, :password_hash)";
-
-    if ($stmt = $pdo->prepare($sql)) {
-        // Bind parameters
-        $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-        $stmt->bindParam(':email', $email, PDO::PARAM_STR);
-        $stmt->bindParam(':password_hash', $password_hash, PDO::PARAM_STR);
-
-        // Execute the prepared statement
-        if ($stmt->execute()) {
-            echo "User registered successfully.";
-            // You might want to redirect the user to a login page
-            // header("location: login.php");
-        } else {
-            echo "Something went wrong. Please try again later.";
-        }
-
-        // Close statement
-        unset($stmt);
-    }
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: form.php');
+    exit;
 }
-// Close connection
-unset($pdo);
-?>
+
+
+$username = trim($_POST['username'] ?? '');
+$email    = trim($_POST['email']    ?? '');
+$password =      $_POST['password'] ?? '';
+
+
+$errors = [];
+
+if (strlen($username) < 3) {
+    $errors[] = 'Username must be at least 3 characters.';
+}
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $errors[] = 'Please enter a valid email address.';  // fixed typo: $errors not $erros
+}
+
+if (strlen($password) < 8) {
+    $errors[] = 'Password must be at least 8 characters.';
+}
+
+// ── 3. Check availability & insert
+try {
+
+    // Check username
+    $stmt = $conn->prepare('SELECT id FROM users WHERE username = :username');
+    $stmt->execute([':username' => $username]);
+    if ($stmt->fetch()) {
+        echo 'This username is already taken.';
+        exit;
+    }
+
+    // Check email
+    $stmt = $conn->prepare('SELECT id FROM users WHERE email = :email');
+    $stmt->execute([':email' => $email]);
+    if ($stmt->fetch()) {
+        echo 'This email is already registered.';
+        exit;
+    }
+
+    
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+    $stmt = $conn->prepare(
+        'INSERT INTO users (username, email, password) VALUES (:username, :email, :password)'
+    );
+
+    $stmt->execute([
+        ':username' => $username,
+        ':email'    => $email,
+        ':password' => $hashedPassword,
+    ]);
+
+    
+    header('Location: success.php');
+    exit;
+
+} catch (PDOException $e) {
+    error_log('Registration error: ' . $e->getMessage()); // saved to server log
+    echo 'Something went wrong. Please try again later.';
+}

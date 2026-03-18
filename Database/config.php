@@ -7,10 +7,11 @@ define('DB_NAME', 'auth_demo');
 
 
 try {
-    $pdo = new PDO("mysql:host=" . DB_SERVER . ";dbname=" . DB_NAME, DB_USERNAME, DB_PASSWORD);
-    // Set the PDO error mode to exception
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn = new PDO("mysql:host=" . DB_SERVER . ";dbname=" . DB_NAME, DB_USERNAME, DB_PASSWORD);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    echo "Connected successfully!";
 } catch (PDOException $e) {
-    die("ERROR: Could not connect. " . $e->getMessage());
+    error_log($e->getMessage());
+    die("Database connection failed!");
 }
 ?>
